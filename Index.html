@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOCAT Coffee - Premium Specialty Coffee Beans</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        :root {
+            --color-primary: #1a1a1a;
+            --color-secondary: #d4a574;
+            --color-accent: #8b6f47;
+            --color-light: #f5f5f5;
+            --color-white: #ffffff;
+            --color-text: #2c2c2c;
+            --color-border: #e0ddd8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--color-text);
+            line-height: 1.6;
+            background-color: var(--color-white);
+        }
+
+        /* Navigation */
+        nav {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--color-secondary);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: var(--color-white);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            color: var(--color-secondary);
+        }
+
+        .cart-icon {
+            cursor: pointer;
+            font-size: 20px;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .cart-icon:hover {
+            color: var(--color-secondary);
+        }
+
+        #cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--color-secondary);
+            color: var(--color-white);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+            color: var(--color-white);
+            padding: 100px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(212, 165, 116, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 54px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #d4a574;
+            font-weight: 300;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 40px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background-color: var(--color-secondary);
+            color: var(--color-white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(212, 165, 116, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--color-white);
+            border: 2px solid var(--color-secondary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--color-secondary);
+            color: var(--color-white);
+        }
+
+        /* Featured Section */
+        .featured {
+            padding: 80px 40px;
+            background-color: var(--color-light);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 50px;
+            color: var(--color-primary);
+            letter-spacing: 1px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background-color: var(--color-white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .product-info {
+            padding: 25px;
+        }
+
+        .product-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--color-primary);
+        }
+
+        .product-description {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .product-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background-color: #f0ede8;
+            color: var(--color-accent);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .product-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--color-secondary);
+            margin-bottom: 15px;
+        }
+
+        .product-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease;
+        }
+
+        .product-btn:hover {
+            background-color: var(--color-accent);
+        }
+
+        /* About Section */
+        .about {
+            padding: 80px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .about-text h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--color-primary);
+        }
+
+        .about-text p {
+            font-size: 15px;
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .about-image {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #d4a574 0%, #8b6f47 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Newsletter Section */
+        .newsletter {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .newsletter h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .newsletter p {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: #d4a574;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .newsletter-form button {
+            padding: 12px 30px;
+            background-color: var(--color-secondary);
+            color: var(--color-white);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .newsletter-form button:hover {
+            background-color: var(--color-accent);
+        }
+
+        /* Checkout Modal */
+        .checkout-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .checkout-content {
+            background-color: var(--color-white);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-checkout {
+            color: #888;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-checkout:hover {
+            color: var(--color-primary);
+        }
+
+        .cart-items {
+            margin: 20px 0;
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-total {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--color-secondary);
+            margin: 20px 0;
+            text-align: right;
+        }
+
+        .checkout-form {
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--color-primary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        #card-element {
+            border: 1px solid var(--color-border);
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--color-secondary);
+            color: var(--color-white);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            background-color: var(--color-accent);
+        }
+
+        .checkout-btn:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #0f0f0f;
+            color: #888;
+            padding: 40px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .footer-section h3 {
+            color: var(--color-white);
+            font-size: 14px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer-section a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--color-secondary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #333;
+            padding-top: 30px;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 20px;
+                flex-direction: column;
+                height: auto;
+                gap: 15px;
+            }
+
+            .nav-menu {
+                gap: 20px;
+                font-size: 13px;
+            }
+
+            .hero {
+                padding: 60px 20px;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .featured {
+                padding: 60px 20px;
+            }
+
+            .about {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">BOCAT</div>
+        <ul class="nav-menu">
+            <li><a href="#shop">SHOP</a></li>
+            <li><a href="#about">ABOUT</a></li>
+            <li><a href="#contact">CONTACT</a></li>
+            <li><span class="cart-icon" onclick="openCheckout()">🛒 <span id="cart-count">0</span></span></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>BOCAT COFFEE</h1>
+            <p>Expertly Roasted. Beautifully Bold. Purely Premium.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="document.querySelector('#shop').scrollIntoView()">SHOP NOW</button>
+                <button class="btn btn-secondary" onclick="document.querySelector('#about').scrollIntoView()">LEARN MORE</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="featured" id="shop">
+        <h2 class="section-title">OUR COLLECTIONS</h2>
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-image">☕ Premium Coffee Bag</div>
+                <div class="product-info">
+                    <div class="product-name">Classic Blend</div>
+                    <p class="product-description">Our signature blend featuring a smooth, balanced profile with notes of chocolate and caramel. Perfect for any brewing method.</p>
+                    <div class="product-tags">
+                        <span class="tag">MEDIUM ROAST</span>
+                        <span class="tag">12 OZ</span>
+                    </div>
+                    <div class="product-price">$14.99</div>
+                    <button class="product-btn" data-product="Classic Blend" data-price="14.99">ADD TO CART</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">☕ Premium Coffee Bag</div>
+                <div class="product-info">
+                    <div class="product-name">Single Origin</div>
+                    <p class="product-description">Carefully sourced from premium coffee regions. Bright acidity with fruity undertones. A true specialty coffee experience.</p>
+                    <div class="product-tags">
+                        <span class="tag">LIGHT ROAST</span>
+                        <span class="tag">12 OZ</span>
+                    </div>
+                    <div class="product-price">$16.99</div>
+                    <button class="product-btn" data-product="Single Origin" data-price="16.99">ADD TO CART</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">☕ Premium Coffee Bag</div>
+                <div class="product-info">
+                    <div class="product-name">Bold Dark Roast</div>
+                    <p class="product-description">Deep, rich, and full-bodied. Features bold flavors with hints of dark chocolate and nuts. Ideal for espresso lovers.</p>
+                    <div class="product-tags">
+                        <span class="tag">DARK ROAST</span>
+                        <span class="tag">12 OZ</span>
+                    </div>
+                    <div class="product-price">$14.99</div>
+                    <button class="product-btn" data-product="Bold Dark Roast" data-price="14.99">ADD TO CART</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="about-text">
+            <h2>Why Choose BOCAT?</h2>
+            <p>BOCAT Coffee represents our commitment to excellence in every bean. We partner with sustainable farms, carefully select our sources, and roast each batch to perfection.</p>
+            <p>Every cup tells a story—of craftsmanship, passion, and dedication to quality. From the moment our beans are sourced to the moment they reach your cup, BOCAT maintains the highest standards.</p>
+            <p>Join the BOCAT community and experience specialty coffee like never before.</p>
+            <button class="btn btn-primary" style="margin-top: 20px;" onclick="document.querySelector('#shop').scrollIntoView()">SHOP NOW</button>
+        </div>
+        <div class="about-image">
+            🌍 Premium Global Sourcing
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter">
+        <h2>Stay Updated</h2>
+        <p>Subscribe to our newsletter for exclusive offers and coffee insights</p>
+        <form class="newsletter-form" onsubmit="handleNewsletterSubmit(event)">
+            <input type="email" placeholder="Your email address" required>
+            <button type="submit">SUBSCRIBE</button>
+        </form>
+    </section>
+
+    <!-- Checkout Modal -->
+    <div id="checkoutModal" class="checkout-modal">
+        <div class="checkout-content">
+            <span class="close-checkout" onclick="closeCheckout()">&times;</span>
+            <h2>Your Cart</h2>
+            <div class="cart-items" id="cart-items"></div>
+            <div class="cart-total">Total: $<span id="cart-total">0.00</span></div>
+            
+            <div class="checkout-form">
+                <h3 style="margin-bottom: 20px; color: var(--color-primary);">Shipping & Payment</h3>
+                
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="fullName" placeholder="John Doe" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="email" placeholder="john@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Address *</label>
+                    <input type="text" id="address" placeholder="123 Main St" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>City *</label>
+                    <input type="text" id="city" placeholder="Your City" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>State *</label>
+                    <input type="text" id="state" placeholder="NY" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>ZIP Code *</label>
+                    <input type="text" id="zip" placeholder="10001" required>
+                </div>
+                
+                <button class="checkout-btn" onclick="processOrder()">COMPLETE ORDER</button>
+                <p style="text-align: center; margin-top: 15px; color: #666; font-size: 12px;">
+                    Your order will be forwarded to our roastery for fresh roasting and shipping.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>ABOUT BOCAT</h3>
+                <p>Premium specialty coffee sourced and roasted to perfection. Handcrafted for athletes and coffee enthusiasts.</p>
+            </div>
+            <div class="footer-section">
+                <h3>QUICK LINKS</h3>
+                <ul>
+                    <li><a href="#shop">Shop</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="#">Returns</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>CONTACT</h3>
+                <ul>
+                    <li>Email: hello@bocatcoffee.com</li>
+                    <li>Follow us on social</li>
+                    <li><a href="#">Twitter</a></li>
+                    <li><a href="#">Instagram</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 BOCAT Coffee. All rights reserved. | Premium Coffee Roasters</p>
+        </div>
+    </footer>
+
+    <script>
+        let cart = [];
+
+        // Add to cart functionality
+        document.querySelectorAll('.product-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const productName = this.dataset.product;
+                const productPrice = this.dataset.price;
+                cart.push({name: productName, price: productPrice});
+                updateCartCount();
+                this.textContent = '✓ ADDED';
+                setTimeout(() => {
+                    this.textContent = 'ADD TO CART';
+                },
